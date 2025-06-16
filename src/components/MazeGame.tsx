@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { generateMaze } from '../utils/mazeGenerator';
 import { findOptimalMoves } from '../utils/pathfinding';
 import type { Position, ChallengeLevel, GameScreenState } from '../types/maze';
@@ -157,20 +157,25 @@ export const MazeGame: React.FC = () => {
     clearHistory();
   }, [clearHistory]);
 
+  const isRunningRef = useRef(isRunning);
+  isRunningRef.current = isRunning;
+
+  const handleMove = useCallback(() => {
+    console.log('MazeGame: Move made, incrementing moves');
+    incrementMoves();
+    if (!isRunningRef.current) {
+      console.log('MazeGame: Starting timer');
+      startTimer();
+    }
+  }, [incrementMoves, startTimer]);
+
   const { handleDirectionInput } = useGameControls({
     playerPosition,
     setPlayerPosition,
     maze,
     goalPosition,
     onWin: handleWin,
-    onMove: useCallback(() => {
-      console.log('MazeGame: Move made, incrementing moves');
-      incrementMoves();
-      if (!isRunning) {
-        console.log('MazeGame: Starting timer');
-        startTimer();
-      }
-    }, [incrementMoves, isRunning, startTimer]),
+    onMove: handleMove,
     isAnimating,
     setIsAnimating,
     setAnimatedPosition,

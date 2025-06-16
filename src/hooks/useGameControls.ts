@@ -136,11 +136,13 @@ export const useGameControls = ({
   const mazeRef = useRef(maze);
   const goalPositionRef = useRef(goalPosition);
   const animationCancelRef = useRef(false);
+  const onMoveRef = useRef(onMove);
   
   // Keep refs up to date
   currentPositionRef.current = playerPosition;
   mazeRef.current = maze;
   goalPositionRef.current = goalPosition;
+  onMoveRef.current = onMove;
   
   const processAllInputsCallback = useCallback(() => {
     console.log('useGameControls: processAllInputs called');
@@ -182,7 +184,7 @@ export const useGameControls = ({
     }
     
     // Notify that a move was made
-    onMove?.();
+    onMoveRef.current?.();
     
     isProcessingRef.current = true;
     setIsAnimating(true);
@@ -242,7 +244,7 @@ export const useGameControls = ({
         );
       }, 50);
     }
-  }, [setPlayerPosition, onWin, setIsAnimating, setAnimatedPosition, onMove]);
+  }, [setPlayerPosition, onWin, setIsAnimating, setAnimatedPosition]);
 
   const handleDirectionInput = useCallback((direction: Direction) => {
     console.log('useGameControls: Direction input received:', direction);
@@ -270,8 +272,6 @@ export const useGameControls = ({
     }, 10);
   }, [processAllInputsCallback]);
 
-  // Expose the direction input handler via return value
-  console.log('useGameControls: Returning handleDirectionInput:', typeof handleDirectionInput);
 
 
   useEffect(() => {

@@ -15,7 +15,6 @@ export const TouchControls: React.FC<TouchControlsProps> = ({
   cellSize,
   onDirectionPress,
 }) => {
-  console.log('TouchControls rendered with:', { mazeWidth, mazeHeight, cellSize, onDirectionPress: typeof onDirectionPress });
   const [activeDirection, setActiveDirection] = useState<Direction | null>(null);
 
   const svgWidth = mazeWidth * cellSize;
