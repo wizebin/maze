@@ -3,7 +3,6 @@ import { generateMaze } from '../utils/mazeGenerator';
 import { findOptimalMoves } from '../utils/pathfinding';
 import type { Position, ChallengeLevel, GameScreenState } from '../types/maze';
 import { MazeRenderer } from './MazeRenderer';
-import { Minimap } from './Minimap';
 import { StartScreen } from './StartScreen';
 import { WinScreen } from './WinScreen';
 import { useGameControls } from '../hooks/useGameControls';
@@ -41,6 +40,30 @@ const CHALLENGE_LEVELS: ChallengeLevel[] = [
     width: 20,
     height: 15,
     description: 'The ultimate challenge for maze solving experts.',
+    optimalMoves: 0, // Will be calculated dynamically
+  },
+  {
+    id: 'nightmare',
+    name: 'Nightmare Navigator',
+    width: 25,
+    height: 20,
+    description: 'An enormous maze that will push your skills to the limit.',
+    optimalMoves: 0, // Will be calculated dynamically
+  },
+  {
+    id: 'impossible',
+    name: 'Impossible Odyssey',
+    width: 30,
+    height: 25,
+    description: 'The ultimate test of patience and pathfinding prowess.',
+    optimalMoves: 0, // Will be calculated dynamically
+  },
+  {
+    id: 'godlike',
+    name: 'Godlike Gauntlet',
+    width: 40,
+    height: 30,
+    description: 'Reserved for the truly elite. Can you conquer the unconquerable?',
     optimalMoves: 0, // Will be calculated dynamically
   },
 ];
@@ -167,7 +190,9 @@ export const MazeGame: React.FC = () => {
   }
 
   if (gameScreen === 'finished' && currentLevel) {
-    const currentScore = currentLevel.optimalMoves / (moves * (time / 1000));
+    // Use the same calculation as the score history hook
+    const timeInSeconds = time / 1000;
+    const currentScore = (currentLevel.optimalMoves / (moves * timeInSeconds)) * 10000;
 
     return (
       <WinScreen
@@ -239,14 +264,8 @@ export const MazeGame: React.FC = () => {
           playerPosition={playerPosition}
           animatedPosition={animatedPosition}
           goalPosition={goalPosition}
-          cellSize={currentLevel ? Math.min(50, 800 / currentLevel.width) : 50}
+          cellSize={currentLevel ? Math.min(50, Math.max(15, 800 / currentLevel.width)) : 50}
           isAnimating={isAnimating}
-        />
-        
-        <Minimap
-          maze={maze}
-          playerPosition={playerPosition}
-          goalPosition={goalPosition}
         />
       </div>
 

@@ -31,11 +31,11 @@ export const StartScreen: React.FC<StartScreenProps> = ({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
         backgroundColor: '#FFE5F1',
         fontFamily: 'system-ui, -apple-system, sans-serif',
         padding: '20px',
+        minHeight: '100vh',
+        overflowY: 'auto',
       }}
     >
       <h1
@@ -56,8 +56,9 @@ export const StartScreen: React.FC<StartScreenProps> = ({
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
           gap: '24px',
-          maxWidth: '900px',
+          maxWidth: '1200px',
           width: '100%',
+          marginBottom: '40px',
         }}
       >
         {challengeLevels.map((level) => {
@@ -135,7 +136,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                   }}
                 >
                   <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                    Best Score: {bestScore.toFixed(2)}
+                    Best Score: {Math.round(bestScore).toLocaleString()}
                   </div>
                   <div>
                     Time: {formatTime(bestScoreData.time)} • Moves: {bestScoreData.moves}
@@ -170,7 +171,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
           fontSize: '14px',
         }}
       >
-        <p>Score = Optimal Moves ÷ (Your Moves × Time in seconds)</p>
+        <p>Score = (Optimal Moves ÷ (Your Moves × Time in seconds)) × 10,000</p>
         <p>Higher scores are better!</p>
       </div>
     </div>

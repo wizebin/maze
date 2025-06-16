@@ -294,7 +294,7 @@ export const WinScreen: React.FC<WinScreenProps> = ({
                 textShadow: isNewBestScore() ? '1px 1px 2px rgba(0,0,0,0.2)' : 'none',
               }}
             >
-              {currentScore.toFixed(3)}
+              {Math.round(currentScore).toLocaleString()}
             </div>
 
             <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
@@ -391,7 +391,7 @@ export const WinScreen: React.FC<WinScreenProps> = ({
                         }}>
                           {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`}
                         </span>
-                        <span>{score.score.toFixed(3)}</span>
+                        <span>{Math.round(score.score).toLocaleString()}</span>
                         {isCurrentScore && <span style={{ fontSize: '12px' }}>← NEW!</span>}
                       </div>
                       <div style={{ textAlign: 'right', fontSize: '12px', opacity: 0.8 }}>
@@ -418,7 +418,7 @@ export const WinScreen: React.FC<WinScreenProps> = ({
             fontSize: '14px',
           }}
         >
-          <p>Score = Optimal Moves ÷ (Your Moves × Time in seconds)</p>
+          <p>Score = (Optimal Moves ÷ (Your Moves × Time in seconds)) × 10,000</p>
           <p>Press Escape to return to menu</p>
         </div>
       </div>

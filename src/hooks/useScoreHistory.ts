@@ -29,9 +29,11 @@ export const useScoreHistory = () => {
   }, [scoreHistory]);
 
   const calculateScore = useCallback((time: number, moves: number, optimalMoves: number): number => {
-    // Score = Optimal Moves ÷ (Your Moves × Time in seconds)
+    // Score = (Optimal Moves ÷ (Your Moves × Time in seconds)) × 10,000
+    // Multiply by 10,000 to get scores in a more readable range (e.g., 250-5000)
     const timeInSeconds = time / 1000;
-    return optimalMoves / (moves * timeInSeconds);
+    const baseScore = optimalMoves / (moves * timeInSeconds);
+    return baseScore * 10000;
   }, []);
 
   const addScore = useCallback((
