@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Maze, Position } from '../types/maze';
-import { MazeCell } from './MazeCell';
+import { StaticMaze } from './StaticMaze';
+import { Player } from './Player';
 
 interface MazeRendererProps {
   maze: Maze;
@@ -19,50 +20,28 @@ export const MazeRenderer: React.FC<MazeRendererProps> = ({
   cellSize,
   isAnimating,
 }) => {
-  const svgWidth = maze.width * cellSize;
-  const svgHeight = maze.height * cellSize;
+  // console.log('MazeRenderer: Rendering container (should be infrequent)');
 
   return (
-    <svg
-      width={svgWidth}
-      height={svgHeight}
+    <div
       style={{
-        backgroundColor: '#FFF5E6',
-        borderRadius: '8px',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+        position: 'relative',
+        display: 'inline-block',
       }}
     >
-      {maze.cells.map((row, y) =>
-        row.map((cell, x) => (
-          <MazeCell
-            key={`${x}-${y}`}
-            cell={cell}
-            cellSize={cellSize}
-            isPlayer={false}
-            isGoal={goalPosition.x === x && goalPosition.y === y}
-            isAnimating={false}
-          />
-        ))
-      )}
+      {/* Static maze structure - memoized and rarely re-renders */}
+      <StaticMaze
+        maze={maze}
+        goalPosition={goalPosition}
+        cellSize={cellSize}
+      />
       
-      {/* Render animated player separately */}
-      <g transform={`translate(${animatedPosition.x * cellSize}, ${animatedPosition.y * cellSize})`}>
-        <circle
-          cx={cellSize / 2}
-          cy={cellSize / 2}
-          r={cellSize / 3}
-          fill="#FFB3BA"
-          stroke="#FF6B7A"
-          strokeWidth="2"
-        />
-        <ellipse
-          cx={cellSize / 2 + 2}
-          cy={cellSize / 2 + cellSize / 3 + 2}
-          rx={cellSize / 4}
-          ry={cellSize / 8}
-          fill="#00000030"
-        />
-      </g>
-    </svg>
+      {/* Dynamic player overlay - only re-renders when position changes */}
+      <Player
+        animatedPosition={animatedPosition}
+        cellSize={cellSize}
+        isAnimating={isAnimating}
+      />
+    </div>
   );
 };

@@ -259,12 +259,12 @@ export const MazeGame: React.FC = () => {
         alignItems: 'center',
         backgroundColor: '#FFE5F1',
         fontFamily: 'system-ui, -apple-system, sans-serif',
-        height: '100%',
-        width: '100%',
-        maxWidth: '100vw',
+        height: '100vh', // Use viewport height for full screen
+        width: '100vw', // Use viewport width for full screen
         overflowY: 'auto',
         overflowX: 'hidden', // Prevent horizontal scrolling
         boxSizing: 'border-box',
+        position: 'relative',
       }}
     >
       {/* Header with level info and stats */}
@@ -275,11 +275,12 @@ export const MazeGame: React.FC = () => {
           alignItems: 'center',
           width: '100%',
           maxWidth: '100vw',
-          marginBottom: '20px',
-          padding: '0 clamp(10px, 3vw, 20px)',
+          marginBottom: 'clamp(8px, 2vw, 20px)',
+          padding: '0 clamp(8px, 2vw, 20px)',
           boxSizing: 'border-box',
           flexWrap: 'wrap',
-          gap: '10px',
+          gap: 'clamp(5px, 1.5vw, 10px)',
+          flexShrink: 0, // Don't shrink the header
         }}
       >
         <div style={{ color: '#9B7AA8', fontSize: 'clamp(14px, 4vw, 18px)', fontWeight: '600' }}>
@@ -312,11 +313,14 @@ export const MazeGame: React.FC = () => {
       <div 
         style={{ 
           position: 'relative', 
-          padding: containerPadding,
+          padding: `${containerPadding}px`,
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           minHeight: '0', // Allow shrinking
+          flex: '1 1 auto', // Take remaining space
+          width: '100%',
+          boxSizing: 'border-box',
         }}
       >
         <div style={{ position: 'relative' }}>
@@ -346,15 +350,16 @@ export const MazeGame: React.FC = () => {
 
       <div
         style={{
-          marginTop: 'clamp(12px, 3vw, 24px)',
+          marginTop: 'clamp(8px, 2vw, 24px)',
           textAlign: 'center',
           color: '#9B7AA8',
-          padding: '0 clamp(10px, 3vw, 20px)',
+          padding: '0 clamp(8px, 2vw, 20px)',
           maxWidth: '100vw',
           boxSizing: 'border-box',
+          flexShrink: 0, // Don't shrink the footer
         }}
       >
-        <p style={{ marginBottom: '8px', fontSize: 'clamp(12px, 2.5vw, 14px)' }}>Use arrow keys or tap the circles to navigate</p>
+        <p style={{ marginBottom: '8px', fontSize: 'clamp(12px, 2.5vw, 14px)' }}>Use arrow keys or tap the maze to navigate</p>
         <p style={{ marginBottom: '16px', fontSize: 'clamp(12px, 2.5vw, 14px)' }}>Press R to restart • Escape for menu</p>
 
         {gameWon && (
