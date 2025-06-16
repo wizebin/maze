@@ -19,88 +19,91 @@ export const TouchControls: React.FC<TouchControlsProps> = ({
 
   const svgWidth = mazeWidth * cellSize;
   const svgHeight = mazeHeight * cellSize;
-  const touchZoneSize = Math.min(80, cellSize * 2); // Responsive touch zone size
 
-  const handleTouchStart = (direction: Direction) => {
-    console.log('TouchControls: Touch start for direction:', direction);
+  const handleTouch = (event: React.TouchEvent | React.MouseEvent, direction: Direction) => {
+    event.preventDefault();
+    console.log('TouchControls: Touch for direction:', direction);
     setActiveDirection(direction);
     onDirectionPress(direction);
+    
+    // Clear active state after a short delay for visual feedback
+    setTimeout(() => setActiveDirection(null), 150);
   };
 
-  const handleTouchEnd = () => {
-    setActiveDirection(null);
-  };
-
-  const getArrowPath = (direction: Direction) => {
-    const size = touchZoneSize * 0.3;
-    const center = touchZoneSize / 2;
-
-    switch (direction) {
-      case 'up':
-        return `M ${center} ${center - size/2} L ${center + size/2} ${center + size/2} L ${center - size/2} ${center + size/2} Z`;
-      case 'right':
-        return `M ${center + size/2} ${center} L ${center - size/2} ${center - size/2} L ${center - size/2} ${center + size/2} Z`;
-      case 'down':
-        return `M ${center} ${center + size/2} L ${center - size/2} ${center - size/2} L ${center + size/2} ${center - size/2} Z`;
-      case 'left':
-        return `M ${center - size/2} ${center} L ${center + size/2} ${center - size/2} L ${center + size/2} ${center + size/2} Z`;
+  const getTouchDirection = (event: React.TouchEvent | React.MouseEvent): Direction => {
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const touch = 'touches' in event ? event.touches[0] : event;
+    
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    
+    // Convert to relative coordinates (0-1)
+    const relX = x / rect.width;
+    const relY = y / rect.height;
+    
+    // Define regions with some overlap for better UX
+    // Create diamond-shaped regions that prioritize corners
+    const centerX = 0.5;
+    const centerY = 0.5;
+    const deltaX = relX - centerX;
+    const deltaY = relY - centerY;
+    
+    // Use Manhattan distance to determine direction
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      return deltaX > 0 ? 'right' : 'left';
+    } else {
+      return deltaY > 0 ? 'down' : 'up';
     }
   };
 
-  const TouchZone: React.FC<{
+  const DirectionalRegion: React.FC<{
     direction: Direction;
-    x: number;
-    y: number;
-    style?: React.CSSProperties;
-  }> = ({ direction, x, y, style = {} }) => {
+    style: React.CSSProperties;
+  }> = ({ direction, style }) => {
     const isActive = activeDirection === direction;
-
+    
     return (
       <div
         style={{
           position: 'absolute',
-          left: `calc(${x}px - ${touchZoneSize / 2}px)`,
-          top: `calc(${y}px - ${touchZoneSize / 2}px)`,
-          width: touchZoneSize,
-          height: touchZoneSize,
-          backgroundColor: isActive ? 'rgba(155, 122, 168, 0.3)' : 'rgba(155, 122, 168, 0.1)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          backgroundColor: isActive ? 'rgba(155, 122, 168, 0.15)' : 'transparent',
+          transition: 'background-color 0.1s ease',
           cursor: 'pointer',
           userSelect: 'none',
-          transition: 'all 0.1s ease',
-          transform: isActive ? 'scale(0.95)' : 'scale(1)',
           ...style,
         }}
-        onMouseDown={() => handleTouchStart(direction)}
-        onMouseUp={handleTouchEnd}
-        onMouseLeave={handleTouchEnd}
-        onTouchStart={(e) => {
-          e.preventDefault();
-          handleTouchStart(direction);
+        onMouseDown={(e) => {
+          const detectedDirection = getTouchDirection(e);
+          if (detectedDirection === direction) {
+            handleTouch(e, direction);
+          }
         }}
-        onTouchEnd={(e) => {
-          e.preventDefault();
-          handleTouchEnd();
+        onTouchStart={(e) => {
+          const detectedDirection = getTouchDirection(e);
+          if (detectedDirection === direction) {
+            handleTouch(e, direction);
+          }
         }}
       >
-        <svg
-          width={touchZoneSize * 0.6}
-          height={touchZoneSize * 0.6}
-          viewBox={`0 0 ${touchZoneSize} ${touchZoneSize}`}
-          style={{
-            pointerEvents: 'none',
-            opacity: isActive ? 0.9 : 0.2,
-          }}
-        >
-          <path
-            d={getArrowPath(direction)}
-            fill="#9B7AA8"
-            stroke="#6B5B73"
-            strokeWidth="1"
-          />
-        </svg>
+        {/* Optional: Add subtle directional indicator */}
+        {isActive && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              fontSize: 'clamp(16px, 3vw, 24px)',
+              color: 'rgba(155, 122, 168, 0.8)',
+              pointerEvents: 'none',
+            }}
+          >
+            {direction === 'up' && '↑'}
+            {direction === 'right' && '→'}
+            {direction === 'down' && '↓'}
+            {direction === 'left' && '←'}
+          </div>
+        )}
       </div>
     );
   };
@@ -111,58 +114,103 @@ export const TouchControls: React.FC<TouchControlsProps> = ({
         position: 'absolute',
         top: 0,
         left: 0,
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none', // Allow clicks through to maze
+        width: svgWidth,
+        height: svgHeight,
+        pointerEvents: 'auto',
+      }}
+      onMouseDown={(e) => {
+        const direction = getTouchDirection(e);
+        handleTouch(e, direction);
+      }}
+      onTouchStart={(e) => {
+        const direction = getTouchDirection(e);
+        handleTouch(e, direction);
       }}
     >
-      {/* Top touch zone */}
-      <TouchZone
+      {/* Top region */}
+      <DirectionalRegion
         direction="up"
-        x={svgWidth / 2}
-        y={touchZoneSize * .5}
-        style={{ pointerEvents: 'auto' }}
+        style={{
+          top: 0,
+          left: '25%',
+          width: '50%',
+          height: '40%',
+          clipPath: 'polygon(20% 0%, 80% 0%, 60% 100%, 40% 100%)',
+        }}
       />
 
-      {/* Right touch zone */}
-      <TouchZone
+      {/* Right region */}
+      <DirectionalRegion
         direction="right"
-        x={svgWidth - touchZoneSize * .5}
-        y={svgHeight / 2}
-        style={{ pointerEvents: 'auto' }}
+        style={{
+          top: '25%',
+          right: 0,
+          width: '40%',
+          height: '50%',
+          clipPath: 'polygon(0% 20%, 100% 0%, 100% 80%, 0% 60%)',
+        }}
       />
 
-      {/* Bottom touch zone */}
-      <TouchZone
+      {/* Bottom region */}
+      <DirectionalRegion
         direction="down"
-        x={svgWidth / 2}
-        y={svgHeight - touchZoneSize * .5}
-        style={{ pointerEvents: 'auto' }}
+        style={{
+          bottom: 0,
+          left: '25%',
+          width: '50%',
+          height: '40%',
+          clipPath: 'polygon(40% 0%, 60% 0%, 80% 100%, 20% 100%)',
+        }}
       />
 
-      {/* Left touch zone */}
-      <TouchZone
+      {/* Left region */}
+      <DirectionalRegion
         direction="left"
-        x={touchZoneSize * .5}
-        y={svgHeight / 2}
-        style={{ pointerEvents: 'auto' }}
+        style={{
+          top: '25%',
+          left: 0,
+          width: '40%',
+          height: '50%',
+          clipPath: 'polygon(0% 0%, 100% 20%, 100% 60%, 0% 80%)',
+        }}
+      />
+
+      {/* Fallback: Full maze overlay for any missed touches */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'auto',
+          zIndex: -1, // Behind the directional regions
+        }}
+        onMouseDown={(e) => {
+          const direction = getTouchDirection(e);
+          handleTouch(e, direction);
+        }}
+        onTouchStart={(e) => {
+          const direction = getTouchDirection(e);
+          handleTouch(e, direction);
+        }}
       />
 
       {/* Mobile hint text */}
       <div
         style={{
           position: 'absolute',
-          bottom: svgHeight + touchZoneSize + 20,
+          bottom: -40,
           left: 0,
           right: 0,
           textAlign: 'center',
-          fontSize: '12px',
+          fontSize: 'clamp(10px, 2vw, 12px)',
           color: '#9B7AA8',
           opacity: 0.7,
           pointerEvents: 'none',
         }}
       >
-        Tap the circles to move
+        Tap maze to move
       </div>
     </div>
   );

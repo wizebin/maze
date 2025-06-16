@@ -10,6 +10,7 @@ import { SettingsScreen } from './SettingsScreen';
 import { useGameControls } from '../hooks/useGameControls';
 import { useGameTimer } from '../hooks/useGameTimer';
 import { useScoreHistory } from '../hooks/useScoreHistory';
+import { useMazeSize } from '../hooks/useMazeSize';
 
 const CHALLENGE_LEVELS: ChallengeLevel[] = [
   {
@@ -91,6 +92,12 @@ export const MazeGame: React.FC = () => {
     incrementMoves,
     resetMoves,
   } = useGameTimer();
+
+  // Calculate responsive maze size
+  const { cellSize, containerPadding } = useMazeSize({
+    mazeWidth: maze.width,
+    mazeHeight: maze.height,
+  });
 
   const handleStartGame = useCallback((level: ChallengeLevel) => {
     const newMaze = generateMaze(level.width, level.height);
@@ -253,7 +260,11 @@ export const MazeGame: React.FC = () => {
         backgroundColor: '#FFE5F1',
         fontFamily: 'system-ui, -apple-system, sans-serif',
         height: '100%',
+        width: '100%',
+        maxWidth: '100vw',
         overflowY: 'auto',
+        overflowX: 'hidden', // Prevent horizontal scrolling
+        boxSizing: 'border-box',
       }}
     >
       {/* Header with level info and stats */}
@@ -263,16 +274,19 @@ export const MazeGame: React.FC = () => {
           justifyContent: 'space-between',
           alignItems: 'center',
           width: '100%',
-          maxWidth: '1000px',
+          maxWidth: '100vw',
           marginBottom: '20px',
-          padding: '0 20px',
+          padding: '0 clamp(10px, 3vw, 20px)',
+          boxSizing: 'border-box',
+          flexWrap: 'wrap',
+          gap: '10px',
         }}
       >
-        <div style={{ color: '#9B7AA8', fontSize: '18px', fontWeight: '600' }}>
+        <div style={{ color: '#9B7AA8', fontSize: 'clamp(14px, 4vw, 18px)', fontWeight: '600' }}>
           {currentLevel?.name}
         </div>
 
-        <div style={{ display: 'flex', gap: '32px', color: '#9B7AA8', fontSize: '16px' }}>
+        <div style={{ display: 'flex', gap: 'clamp(8px, 4vw, 32px)', color: '#9B7AA8', fontSize: 'clamp(12px, 3vw, 16px)', flexWrap: 'wrap' }}>
           <div>Time: {formatTime(time)}</div>
           <div>Moves: {moves}</div>
           <div>Target: {currentLevel?.optimalMoves}</div>
@@ -281,12 +295,12 @@ export const MazeGame: React.FC = () => {
         <button
           onClick={handleBackToMenu}
           style={{
-            padding: '8px 16px',
+            padding: 'clamp(6px, 1.5vw, 8px) clamp(12px, 3vw, 16px)',
             backgroundColor: '#FFB3BA',
             color: '#8B0000',
             border: 'none',
-            borderRadius: '6px',
-            fontSize: '14px',
+            borderRadius: 'clamp(4px, 1vw, 6px)',
+            fontSize: 'clamp(12px, 2.5vw, 14px)',
             cursor: 'pointer',
             fontWeight: '600',
           }}
@@ -295,14 +309,23 @@ export const MazeGame: React.FC = () => {
         </button>
       </div>
 
-      <div style={{ position: 'relative', padding: 100 }}>
+      <div 
+        style={{ 
+          position: 'relative', 
+          padding: containerPadding,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '0', // Allow shrinking
+        }}
+      >
         <div style={{ position: 'relative' }}>
           <MazeRenderer
             maze={maze}
             playerPosition={playerPosition}
             animatedPosition={animatedPosition}
             goalPosition={goalPosition}
-            cellSize={currentLevel ? Math.min(50, Math.max(15, 800 / currentLevel.width)) : 50}
+            cellSize={cellSize}
             isAnimating={isAnimating}
           />
 
@@ -310,7 +333,7 @@ export const MazeGame: React.FC = () => {
             <TouchControls
               mazeWidth={maze.width}
               mazeHeight={maze.height}
-              cellSize={currentLevel ? Math.min(50, Math.max(15, 800 / currentLevel.width)) : 50}
+              cellSize={cellSize}
               onDirectionPress={(direction) => {
                 console.log('MazeGame: TouchControls onDirectionPress called with:', direction);
                 console.log('MazeGame: handleDirectionInput is:', handleDirectionInput);
@@ -323,24 +346,29 @@ export const MazeGame: React.FC = () => {
 
       <div
         style={{
-          marginTop: '24px',
+          marginTop: 'clamp(12px, 3vw, 24px)',
           textAlign: 'center',
           color: '#9B7AA8',
+          padding: '0 clamp(10px, 3vw, 20px)',
+          maxWidth: '100vw',
+          boxSizing: 'border-box',
         }}
       >
-        <p style={{ marginBottom: '8px' }}>Use arrow keys or tap the circles to navigate</p>
-        <p style={{ marginBottom: '16px' }}>Press R to restart • Escape for menu</p>
+        <p style={{ marginBottom: '8px', fontSize: 'clamp(12px, 2.5vw, 14px)' }}>Use arrow keys or tap the circles to navigate</p>
+        <p style={{ marginBottom: '16px', fontSize: 'clamp(12px, 2.5vw, 14px)' }}>Press R to restart • Escape for menu</p>
 
         {gameWon && (
           <div
             style={{
-              padding: '16px 32px',
+              padding: 'clamp(12px, 3vw, 16px) clamp(16px, 4vw, 32px)',
               backgroundColor: '#BAFFC9',
-              borderRadius: '8px',
+              borderRadius: 'clamp(6px, 1.5vw, 8px)',
               color: '#4A7C59',
               fontWeight: 'bold',
-              fontSize: '20px',
+              fontSize: 'clamp(16px, 4vw, 20px)',
               animation: 'fadeIn 0.5s ease-in',
+              maxWidth: '100%',
+              wordWrap: 'break-word',
             }}
           >
             🎉 You Won! Calculating score...
