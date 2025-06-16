@@ -81,12 +81,18 @@ const animatePlayerMovement = (
   startPos: Position,
   endPos: Position,
   setAnimatedPosition: (pos: Position) => void,
-  onComplete: () => void
+  onComplete: () => void,
+  cancelRef: { current: boolean }
 ) => {
   const startTime = Date.now();
   const duration = 400; // Animation duration in milliseconds
   
   const animate = () => {
+    if (cancelRef.current) {
+      onComplete();
+      return;
+    }
+    
     const elapsed = Date.now() - startTime;
     const progress = Math.min(elapsed / duration, 1);
     
@@ -123,47 +129,91 @@ export const useGameControls = ({
   const currentPositionRef = useRef<Position>(playerPosition);
   const mazeRef = useRef(maze);
   const goalPositionRef = useRef(goalPosition);
+  const animationCancelRef = useRef(false);
   
   // Keep refs up to date
   currentPositionRef.current = playerPosition;
   mazeRef.current = maze;
   goalPositionRef.current = goalPosition;
   
-  const processNextInput = useCallback(() => {
-    if (isProcessingRef.current || inputQueueRef.current.length === 0) {
+  const processAllInputs = useCallback(() => {
+    if (isProcessingRef.current) {
       return;
     }
     
-    const direction = inputQueueRef.current.shift()!;
-    const currentPos = currentPositionRef.current;
-    const newPosition = findNextIntersection(mazeRef.current, currentPos.x, currentPos.y, direction);
+    if (inputQueueRef.current.length === 0) {
+      return;
+    }
     
-    if (newPosition.x !== currentPos.x || newPosition.y !== currentPos.y) {
-      isProcessingRef.current = true;
-      setIsAnimating(true);
+    // Process all inputs to find final destination
+    let currentPos = currentPositionRef.current;
+    let finalPosition = currentPos;
+    const validMoves: Position[] = [];
+    
+    while (inputQueueRef.current.length > 0) {
+      const direction = inputQueueRef.current.shift()!;
+      const newPosition = findNextIntersection(mazeRef.current, currentPos.x, currentPos.y, direction);
       
+      if (newPosition.x !== currentPos.x || newPosition.y !== currentPos.y) {
+        validMoves.push(newPosition);
+        currentPos = newPosition;
+        finalPosition = newPosition;
+      }
+    }
+    
+    if (validMoves.length === 0) {
+      return;
+    }
+    
+    isProcessingRef.current = true;
+    setIsAnimating(true);
+    
+    if (validMoves.length === 1) {
+      // Only one move, animate it
       animatePlayerMovement(
-        currentPos,
-        newPosition,
+        currentPositionRef.current,
+        finalPosition,
         setAnimatedPosition,
         () => {
-          currentPositionRef.current = newPosition;
-          setPlayerPosition(newPosition);
-          setAnimatedPosition(newPosition);
+          currentPositionRef.current = finalPosition;
+          setPlayerPosition(finalPosition);
+          setAnimatedPosition(finalPosition);
           setIsAnimating(false);
           isProcessingRef.current = false;
           
-          if (newPosition.x === goalPositionRef.current.x && newPosition.y === goalPositionRef.current.y) {
+          if (finalPosition.x === goalPositionRef.current.x && finalPosition.y === goalPositionRef.current.y) {
             onWin();
-          } else {
-            // Process next queued input
-            setTimeout(processNextInput, 50);
           }
-        }
+        },
+        animationCancelRef
       );
     } else {
-      // If no movement possible, try next input immediately
-      setTimeout(processNextInput, 10);
+      // Multiple moves, jump to second-to-last immediately, then animate to final
+      const secondToLast = validMoves[validMoves.length - 2];
+      currentPositionRef.current = secondToLast;
+      setPlayerPosition(secondToLast);
+      setAnimatedPosition(secondToLast);
+      
+      // Short delay then animate to final position
+      setTimeout(() => {
+        animatePlayerMovement(
+          secondToLast,
+          finalPosition,
+          setAnimatedPosition,
+          () => {
+            currentPositionRef.current = finalPosition;
+            setPlayerPosition(finalPosition);
+            setAnimatedPosition(finalPosition);
+            setIsAnimating(false);
+            isProcessingRef.current = false;
+            
+            if (finalPosition.x === goalPositionRef.current.x && finalPosition.y === goalPositionRef.current.y) {
+              onWin();
+            }
+          },
+          animationCancelRef
+        );
+      }, 50);
     }
   }, [setPlayerPosition, onWin, setIsAnimating, setAnimatedPosition]);
 
@@ -190,16 +240,24 @@ export const useGameControls = ({
       
       event.preventDefault();
       
+      // If currently animating, cancel current animation
+      if (isProcessingRef.current) {
+        animationCancelRef.current = true;
+      }
+      
       // Add to queue (limit queue size to prevent spam)
       if (inputQueueRef.current.length < 5) {
         inputQueueRef.current.push(direction);
       }
       
-      // Process queue
-      processNextInput();
+      // Process all queued inputs
+      setTimeout(() => {
+        animationCancelRef.current = false;
+        processAllInputs();
+      }, 10);
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [processNextInput]);
+  }, [processAllInputs]);
 };
