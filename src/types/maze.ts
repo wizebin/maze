@@ -45,4 +45,4 @@ export interface GameScore {
   timestamp: number;
 }
 
-export type GameScreenState = 'menu' | 'playing' | 'finished';
+export type GameScreenState = 'menu' | 'playing' | 'finished' | 'settings';

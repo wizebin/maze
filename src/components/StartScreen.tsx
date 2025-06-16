@@ -5,12 +5,14 @@ interface StartScreenProps {
   challengeLevels: ChallengeLevel[];
   scoreHistory: GameScore[];
   onStartGame: (level: ChallengeLevel) => void;
+  onOpenSettings: () => void;
 }
 
 export const StartScreen: React.FC<StartScreenProps> = ({
   challengeLevels,
   scoreHistory,
   onStartGame,
+  onOpenSettings,
 }) => {
   const getBestScore = (levelId: string) => {
     const levelScores = scoreHistory.filter(score => score.level === levelId);
@@ -34,31 +36,61 @@ export const StartScreen: React.FC<StartScreenProps> = ({
         backgroundColor: '#FFE5F1',
         fontFamily: 'system-ui, -apple-system, sans-serif',
         padding: '20px',
-        minHeight: '100vh',
+        height: '100%',
         overflowY: 'auto',
       }}
     >
-      <h1
-        style={{
-          color: '#9B7AA8',
-          marginBottom: '40px',
-          fontSize: '48px',
-          fontWeight: '300',
-          letterSpacing: '3px',
-          textAlign: 'center',
-        }}
-      >
-        Maze Runner
-      </h1>
+      <div style={{ width: '100%', maxWidth: '1200px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+        <div style={{ width: '60px' }}></div> {/* Spacer for centering */}
+        <h1
+          style={{
+            color: '#9B7AA8',
+            fontSize: '48px',
+            fontWeight: '300',
+            letterSpacing: '3px',
+            textAlign: 'center',
+            margin: 0,
+          }}
+        >
+          Maze Runner
+        </h1>
+        <button
+          onClick={onOpenSettings}
+          style={{
+            padding: '12px 16px',
+            backgroundColor: '#E6F7FF',
+            color: '#5B8DB8',
+            border: '2px solid #B3D9FF',
+            borderRadius: '8px',
+            fontSize: '14px',
+            cursor: 'pointer',
+            fontWeight: '600',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#D1ECFF';
+            e.currentTarget.style.transform = 'translateY(-2px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#E6F7FF';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          ⚙️ Settings
+        </button>
+      </div>
 
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
           gap: '24px',
-          maxWidth: '1200px',
+          maxWidth: '1400px',
           width: '100%',
-          marginBottom: '40px',
+          marginBottom: '60px',
         }}
       >
         {challengeLevels.map((level) => {
@@ -165,10 +197,12 @@ export const StartScreen: React.FC<StartScreenProps> = ({
 
       <div
         style={{
-          marginTop: '40px',
+          marginTop: '20px',
+          marginBottom: '40px',
           textAlign: 'center',
           color: '#9B7AA8',
           fontSize: '14px',
+          paddingBottom: '20px',
         }}
       >
         <p>Score = (Optimal Moves ÷ (Your Moves × Time in seconds)) × 10,000</p>

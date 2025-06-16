@@ -3,8 +3,10 @@ import { generateMaze } from '../utils/mazeGenerator';
 import { findOptimalMoves } from '../utils/pathfinding';
 import type { Position, ChallengeLevel, GameScreenState } from '../types/maze';
 import { MazeRenderer } from './MazeRenderer';
+import { TouchControls } from './TouchControls';
 import { StartScreen } from './StartScreen';
 import { WinScreen } from './WinScreen';
+import { SettingsScreen } from './SettingsScreen';
 import { useGameControls } from '../hooks/useGameControls';
 import { useGameTimer } from '../hooks/useGameTimer';
 import { useScoreHistory } from '../hooks/useScoreHistory';
@@ -77,8 +79,9 @@ export const MazeGame: React.FC = () => {
   const [gameWon, setGameWon] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [animatedPosition, setAnimatedPosition] = useState<Position>(playerPosition);
-  
-  const { scoreHistory, addScore } = useScoreHistory();
+  const [directionInputHandler, setDirectionInputHandler] = useState<((direction: 'up' | 'right' | 'down' | 'left') => void) | null>(null);
+
+  const { scoreHistory, addScore, clearHistory } = useScoreHistory();
   const {
     time,
     moves,
@@ -94,11 +97,11 @@ export const MazeGame: React.FC = () => {
     const newMaze = generateMaze(level.width, level.height);
     const startPos = { x: 0, y: 0 };
     const endPos = { x: level.width - 1, y: level.height - 1 };
-    
+
     // Calculate actual optimal moves for this specific maze
     const optimalMoves = findOptimalMoves(newMaze, startPos, endPos);
     const levelWithOptimalMoves = { ...level, optimalMoves };
-    
+
     setCurrentLevel(levelWithOptimalMoves);
     setMaze(newMaze);
     setPlayerPosition(startPos);
@@ -112,13 +115,13 @@ export const MazeGame: React.FC = () => {
 
   const handleWin = useCallback(() => {
     if (!currentLevel) return;
-    
+
     setGameWon(true);
     stopTimer();
-    
+
     // Add score to history
     const score = addScore(currentLevel.id, time, moves, currentLevel.optimalMoves);
-    
+
     // Switch to finished screen after a delay
     setTimeout(() => {
       setGameScreen('finished');
@@ -138,6 +141,14 @@ export const MazeGame: React.FC = () => {
     handleStartGame(currentLevel);
   }, [currentLevel, handleStartGame]);
 
+  const handleOpenSettings = useCallback(() => {
+    setGameScreen('settings');
+  }, []);
+
+  const handleClearScores = useCallback(() => {
+    clearHistory();
+  }, [clearHistory]);
+
   useGameControls({
     playerPosition,
     setPlayerPosition,
@@ -153,6 +164,7 @@ export const MazeGame: React.FC = () => {
     isAnimating,
     setIsAnimating,
     setAnimatedPosition,
+    onDirectionInput: setDirectionInputHandler,
   });
 
   useEffect(() => {
@@ -185,6 +197,17 @@ export const MazeGame: React.FC = () => {
         challengeLevels={CHALLENGE_LEVELS}
         scoreHistory={scoreHistory}
         onStartGame={handleStartGame}
+        onOpenSettings={handleOpenSettings}
+      />
+    );
+  }
+
+  if (gameScreen === 'settings') {
+    return (
+      <SettingsScreen
+        scoreHistory={scoreHistory}
+        onClearScores={handleClearScores}
+        onBackToMenu={handleBackToMenu}
       />
     );
   }
@@ -213,10 +236,10 @@ export const MazeGame: React.FC = () => {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
         backgroundColor: '#FFE5F1',
         fontFamily: 'system-ui, -apple-system, sans-serif',
+        height: '100%',
+        overflowY: 'auto',
       }}
     >
       {/* Header with level info and stats */}
@@ -234,7 +257,7 @@ export const MazeGame: React.FC = () => {
         <div style={{ color: '#9B7AA8', fontSize: '18px', fontWeight: '600' }}>
           {currentLevel?.name}
         </div>
-        
+
         <div style={{ display: 'flex', gap: '32px', color: '#9B7AA8', fontSize: '16px' }}>
           <div>Time: {formatTime(time)}</div>
           <div>Moves: {moves}</div>
@@ -257,8 +280,8 @@ export const MazeGame: React.FC = () => {
           Menu
         </button>
       </div>
-      
-      <div style={{ position: 'relative' }}>
+
+      <div style={{ position: 'relative', padding: '100px' }}>
         <MazeRenderer
           maze={maze}
           playerPosition={playerPosition}
@@ -267,6 +290,15 @@ export const MazeGame: React.FC = () => {
           cellSize={currentLevel ? Math.min(50, Math.max(15, 800 / currentLevel.width)) : 50}
           isAnimating={isAnimating}
         />
+
+        {currentLevel && directionInputHandler && (
+          <TouchControls
+            mazeWidth={maze.width}
+            mazeHeight={maze.height}
+            cellSize={currentLevel ? Math.min(50, Math.max(15, 800 / currentLevel.width)) : 50}
+            onDirectionPress={directionInputHandler}
+          />
+        )}
       </div>
 
       <div
@@ -276,9 +308,9 @@ export const MazeGame: React.FC = () => {
           color: '#9B7AA8',
         }}
       >
-        <p style={{ marginBottom: '8px' }}>Use arrow keys to navigate</p>
+        <p style={{ marginBottom: '8px' }}>Use arrow keys or tap the circles to navigate</p>
         <p style={{ marginBottom: '16px' }}>Press R to restart • Escape for menu</p>
-        
+
         {gameWon && (
           <div
             style={{

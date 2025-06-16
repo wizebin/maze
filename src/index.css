@@ -1,3 +1,10 @@
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent default scrolling on these elements */
+}
+
 :root {
   font-family: system-ui, -apple-system, sans-serif;
   line-height: 1.5;

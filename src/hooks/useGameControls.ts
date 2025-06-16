@@ -11,6 +11,7 @@ interface UseGameControlsProps {
   isAnimating: boolean;
   setIsAnimating: (animating: boolean) => void;
   setAnimatedPosition: (position: Position) => void;
+  onDirectionInput?: (direction: Direction) => void;
 }
 
 type Direction = 'up' | 'right' | 'down' | 'left';
@@ -125,6 +126,7 @@ export const useGameControls = ({
   isAnimating,
   setIsAnimating,
   setAnimatedPosition,
+  onDirectionInput,
 }: UseGameControlsProps) => {
   const inputQueueRef = useRef<Direction[]>([]);
   const isProcessingRef = useRef(false);
@@ -138,6 +140,31 @@ export const useGameControls = ({
   mazeRef.current = maze;
   goalPositionRef.current = goalPosition;
   
+  const handleDirectionInput = useCallback((direction: Direction) => {
+    // If currently animating, cancel current animation
+    if (isProcessingRef.current) {
+      animationCancelRef.current = true;
+    }
+    
+    // Add to queue (limit queue size to prevent spam)
+    if (inputQueueRef.current.length < 5) {
+      inputQueueRef.current.push(direction);
+    }
+    
+    // Process all queued inputs
+    setTimeout(() => {
+      animationCancelRef.current = false;
+      processAllInputs();
+    }, 10);
+  }, []);
+
+  // Expose the direction input handler
+  useEffect(() => {
+    if (onDirectionInput) {
+      onDirectionInput(handleDirectionInput);
+    }
+  }, [handleDirectionInput, onDirectionInput]);
+
   const processAllInputs = useCallback(() => {
     if (isProcessingRef.current) {
       return;
@@ -244,25 +271,10 @@ export const useGameControls = ({
       }
       
       event.preventDefault();
-      
-      // If currently animating, cancel current animation
-      if (isProcessingRef.current) {
-        animationCancelRef.current = true;
-      }
-      
-      // Add to queue (limit queue size to prevent spam)
-      if (inputQueueRef.current.length < 5) {
-        inputQueueRef.current.push(direction);
-      }
-      
-      // Process all queued inputs
-      setTimeout(() => {
-        animationCancelRef.current = false;
-        processAllInputs();
-      }, 10);
+      handleDirectionInput(direction);
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [processAllInputs]);
+  }, [handleDirectionInput]);
 };

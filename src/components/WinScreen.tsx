@@ -214,7 +214,7 @@ export const WinScreen: React.FC<WinScreenProps> = ({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: '100vh',
+        height: '100%',
         backgroundColor: '#FFE5F1',
         fontFamily: 'system-ui, -apple-system, sans-serif',
         padding: '20px',
