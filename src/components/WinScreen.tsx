@@ -87,7 +87,7 @@ export const WinScreen: React.FC<WinScreenProps> = ({
       const angle = (i / 12) * Math.PI * 2;
       const velocity = Math.random() * 3 + 2;
       particles.push({
-        id: i,
+        id: id * 1000 + i, // Make each particle ID unique by combining firework ID with particle index
         x,
         y,
         vx: Math.cos(angle) * velocity,
@@ -217,7 +217,7 @@ export const WinScreen: React.FC<WinScreenProps> = ({
         height: '100%',
         backgroundColor: '#FFE5F1',
         fontFamily: 'system-ui, -apple-system, sans-serif',
-        padding: '20px',
+        padding: 'clamp(10px, 3vw, 20px)',
         overflow: 'hidden',
       }}
     >
@@ -232,10 +232,10 @@ export const WinScreen: React.FC<WinScreenProps> = ({
         <h1
           style={{
             color: '#9B7AA8',
-            marginBottom: '40px',
-            fontSize: '48px',
+            marginBottom: 'clamp(20px, 5vw, 40px)',
+            fontSize: 'clamp(24px, 8vw, 48px)',
             fontWeight: '300',
-            letterSpacing: '3px',
+            letterSpacing: 'clamp(1px, 0.5vw, 3px)',
             textAlign: 'center',
             textShadow: '2px 2px 4px rgba(0,0,0,0.1)',
           }}
@@ -244,10 +244,10 @@ export const WinScreen: React.FC<WinScreenProps> = ({
         </h1>
 
         <div
+          className="win-screen-grid"
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '32px',
+            gap: 'clamp(16px, 4vw, 32px)',
             maxWidth: '800px',
             width: '100%',
           }}
@@ -256,18 +256,18 @@ export const WinScreen: React.FC<WinScreenProps> = ({
           <div
             style={{
               backgroundColor: '#FFF5E6',
-              borderRadius: '16px',
-              padding: '32px',
+              borderRadius: 'clamp(12px, 3vw, 16px)',
+              padding: 'clamp(16px, 5vw, 32px)',
               boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)',
               border: isNewBestScore() ? '3px solid #FFD700' : '2px solid #D4B5FF',
               textAlign: 'center',
             }}
           >
-            <h2 style={{ color: '#9B7AA8', marginBottom: '24px', fontSize: '24px' }}>
+            <h2 style={{ color: '#9B7AA8', marginBottom: 'clamp(12px, 3vw, 24px)', fontSize: 'clamp(18px, 4vw, 24px)' }}>
               {level.name}
             </h2>
             
-            <div style={{ fontSize: '18px', color: '#666', marginBottom: '24px' }}>
+            <div style={{ fontSize: 'clamp(14px, 3vw, 18px)', color: '#666', marginBottom: 'clamp(12px, 3vw, 24px)' }}>
               <div style={{ marginBottom: '12px' }}>
                 <strong>Time:</strong> {formatTime(time)}
               </div>
@@ -284,32 +284,33 @@ export const WinScreen: React.FC<WinScreenProps> = ({
 
             <div
               style={{
-                fontSize: '32px',
+                fontSize: 'clamp(20px, 6vw, 32px)',
                 color: isNewBestScore() ? '#FFD700' : '#4A7C59',
                 fontWeight: 'bold',
                 backgroundColor: isNewBestScore() ? '#FFF9C4' : '#BAFFC9',
-                padding: '16px',
-                borderRadius: '12px',
-                marginBottom: '24px',
+                padding: 'clamp(12px, 3vw, 16px)',
+                borderRadius: 'clamp(8px, 2vw, 12px)',
+                marginBottom: 'clamp(16px, 4vw, 24px)',
                 textShadow: isNewBestScore() ? '1px 1px 2px rgba(0,0,0,0.2)' : 'none',
               }}
             >
               {Math.round(currentScore).toLocaleString()}
             </div>
 
-            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', gap: 'clamp(8px, 2vw, 16px)', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
                 onClick={onPlayAgain}
                 style={{
-                  padding: '12px 24px',
+                  padding: 'clamp(8px, 2vw, 12px) clamp(16px, 4vw, 24px)',
                   backgroundColor: '#9B7AA8',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '16px',
+                  borderRadius: 'clamp(6px, 1.5vw, 8px)',
+                  fontSize: 'clamp(14px, 3vw, 16px)',
                   cursor: 'pointer',
                   fontWeight: '600',
                   transition: 'all 0.2s ease',
+                  minWidth: '100px',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = '#8A6B97';
@@ -325,15 +326,16 @@ export const WinScreen: React.FC<WinScreenProps> = ({
               <button
                 onClick={onBackToMenu}
                 style={{
-                  padding: '12px 24px',
+                  padding: 'clamp(8px, 2vw, 12px) clamp(16px, 4vw, 24px)',
                   backgroundColor: '#FFB3BA',
                   color: '#8B0000',
                   border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '16px',
+                  borderRadius: 'clamp(6px, 1.5vw, 8px)',
+                  fontSize: 'clamp(14px, 3vw, 16px)',
                   cursor: 'pointer',
                   fontWeight: '600',
                   transition: 'all 0.2s ease',
+                  minWidth: '100px',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = '#FFA0A9';
@@ -353,18 +355,18 @@ export const WinScreen: React.FC<WinScreenProps> = ({
           <div
             style={{
               backgroundColor: '#F5E6FF',
-              borderRadius: '16px',
-              padding: '32px',
+              borderRadius: 'clamp(12px, 3vw, 16px)',
+              padding: 'clamp(16px, 5vw, 32px)',
               boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)',
               border: '2px solid #D4B5FF',
             }}
           >
-            <h3 style={{ color: '#9B7AA8', marginBottom: '24px', fontSize: '20px', textAlign: 'center' }}>
+            <h3 style={{ color: '#9B7AA8', marginBottom: 'clamp(12px, 3vw, 24px)', fontSize: 'clamp(16px, 3.5vw, 20px)', textAlign: 'center' }}>
               High Scores
             </h3>
 
             {getLevelScores().length > 0 ? (
-              <div style={{ fontSize: '14px' }}>
+              <div style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>
                 {getLevelScores().map((score, index) => {
                   const isCurrentScore = Math.abs(score.score - currentScore) < 0.001 && 
                                         Math.abs(score.time - time) < 1000;
@@ -375,26 +377,26 @@ export const WinScreen: React.FC<WinScreenProps> = ({
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        padding: '12px',
-                        marginBottom: '8px',
+                        padding: 'clamp(8px, 2vw, 12px)',
+                        marginBottom: 'clamp(4px, 1vw, 8px)',
                         backgroundColor: isCurrentScore ? '#BAFFC9' : 'rgba(255, 255, 255, 0.5)',
-                        borderRadius: '8px',
+                        borderRadius: 'clamp(6px, 1.5vw, 8px)',
                         border: isCurrentScore ? '2px solid #4A7C59' : '1px solid rgba(155, 122, 168, 0.2)',
                         fontWeight: isCurrentScore ? 'bold' : 'normal',
                         color: isCurrentScore ? '#4A7C59' : '#666',
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(4px, 1vw, 8px)' }}>
                         <span style={{ 
-                          fontSize: '18px',
+                          fontSize: 'clamp(14px, 3vw, 18px)',
                           color: index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : index === 2 ? '#CD7F32' : '#9B7AA8'
                         }}>
                           {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`}
                         </span>
                         <span>{Math.round(score.score).toLocaleString()}</span>
-                        {isCurrentScore && <span style={{ fontSize: '12px' }}>← NEW!</span>}
+                        {isCurrentScore && <span style={{ fontSize: 'clamp(10px, 2vw, 12px)' }}>← NEW!</span>}
                       </div>
-                      <div style={{ textAlign: 'right', fontSize: '12px', opacity: 0.8 }}>
+                      <div style={{ textAlign: 'right', fontSize: 'clamp(10px, 2vw, 12px)', opacity: 0.8 }}>
                         <div>{formatTime(score.time)}</div>
                         <div>{score.moves} moves</div>
                       </div>
@@ -403,7 +405,7 @@ export const WinScreen: React.FC<WinScreenProps> = ({
                 })}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', color: '#666', fontStyle: 'italic' }}>
+              <div style={{ textAlign: 'center', color: '#666', fontStyle: 'italic', fontSize: 'clamp(12px, 2.5vw, 14px)' }}>
                 This is your first completion!
               </div>
             )}
@@ -412,10 +414,10 @@ export const WinScreen: React.FC<WinScreenProps> = ({
 
         <div
           style={{
-            marginTop: '32px',
+            marginTop: 'clamp(16px, 4vw, 32px)',
             textAlign: 'center',
             color: '#9B7AA8',
-            fontSize: '14px',
+            fontSize: 'clamp(11px, 2.5vw, 14px)',
           }}
         >
           <p>Score = (Optimal Moves ÷ (Your Moves × Time in seconds)) × 10,000</p>
@@ -431,6 +433,24 @@ export const WinScreen: React.FC<WinScreenProps> = ({
         
         .new-best {
           animation: pulse 2s infinite;
+        }
+        
+        .win-screen-grid {
+          grid-template-columns: 1fr;
+        }
+        
+        @media (min-width: 768px) {
+          .win-screen-grid {
+            grid-template-columns: 1fr 1fr;
+          }
+        }
+        
+        /* Improve touch targets on mobile */
+        @media (max-width: 767px) {
+          button {
+            min-height: 44px !important;
+            touch-action: manipulation;
+          }
         }
       `}</style>
     </div>

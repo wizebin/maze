@@ -63,9 +63,7 @@ export const TouchControls: React.FC<TouchControlsProps> = ({
           top: `calc(${y}px - ${touchZoneSize / 2}px)`,
           width: touchZoneSize,
           height: touchZoneSize,
-          backgroundColor: isActive ? 'rgba(155, 122, 168, 0.3)' : 'rgba(155, 122, 168, 0.15)',
-          borderRadius: '50%',
-          border: '2px solid rgba(155, 122, 168, 0.4)',
+          backgroundColor: isActive ? 'rgba(155, 122, 168, 0.3)' : 'rgba(155, 122, 168, 0.1)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -73,9 +71,6 @@ export const TouchControls: React.FC<TouchControlsProps> = ({
           userSelect: 'none',
           transition: 'all 0.1s ease',
           transform: isActive ? 'scale(0.95)' : 'scale(1)',
-          boxShadow: isActive
-            ? 'inset 0 2px 4px rgba(0, 0, 0, 0.2)'
-            : '0 2px 8px rgba(0, 0, 0, 0.1)',
           ...style,
         }}
         onMouseDown={() => handleTouchStart(direction)}
@@ -96,7 +91,7 @@ export const TouchControls: React.FC<TouchControlsProps> = ({
           viewBox={`0 0 ${touchZoneSize} ${touchZoneSize}`}
           style={{
             pointerEvents: 'none',
-            opacity: isActive ? 0.9 : 0.7,
+            opacity: isActive ? 0.9 : 0.2,
           }}
         >
           <path
@@ -125,14 +120,14 @@ export const TouchControls: React.FC<TouchControlsProps> = ({
       <TouchZone
         direction="up"
         x={svgWidth / 2}
-        y={-10}
+        y={touchZoneSize * .5}
         style={{ pointerEvents: 'auto' }}
       />
 
       {/* Right touch zone */}
       <TouchZone
         direction="right"
-        x={svgWidth}
+        x={svgWidth - touchZoneSize * .5}
         y={svgHeight / 2}
         style={{ pointerEvents: 'auto' }}
       />
@@ -141,14 +136,14 @@ export const TouchControls: React.FC<TouchControlsProps> = ({
       <TouchZone
         direction="down"
         x={svgWidth / 2}
-        y={svgHeight}
+        y={svgHeight - touchZoneSize * .5}
         style={{ pointerEvents: 'auto' }}
       />
 
       {/* Left touch zone */}
       <TouchZone
         direction="left"
-        x={-10}
+        x={touchZoneSize * .5}
         y={svgHeight / 2}
         style={{ pointerEvents: 'auto' }}
       />
