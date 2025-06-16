@@ -6,9 +6,10 @@ interface MazeCellProps {
   cellSize: number;
   isPlayer: boolean;
   isGoal: boolean;
+  isAnimating?: boolean;
 }
 
-export const MazeCell: React.FC<MazeCellProps> = ({ cell, cellSize, isPlayer, isGoal }) => {
+export const MazeCell: React.FC<MazeCellProps> = ({ cell, cellSize, isPlayer, isGoal, isAnimating }) => {
   const wallThickness = 4;
   const shadowOffset = 3;
   const wallHeight = 8;
@@ -101,7 +102,7 @@ export const MazeCell: React.FC<MazeCellProps> = ({ cell, cellSize, isPlayer, is
       )}
 
       {isPlayer && (
-        <g>
+        <g style={{ transition: isAnimating ? 'transform 0.3s ease-in-out' : 'none' }}>
           <circle
             cx={cellSize / 2}
             cy={cellSize / 2}
@@ -109,6 +110,10 @@ export const MazeCell: React.FC<MazeCellProps> = ({ cell, cellSize, isPlayer, is
             fill="#FFB3BA"
             stroke="#FF6B7A"
             strokeWidth="2"
+            style={{ 
+              transition: isAnimating ? 'all 0.3s ease-in-out' : 'none',
+              transform: isAnimating ? 'scale(1.1)' : 'scale(1)'
+            }}
           />
           <ellipse
             cx={cellSize / 2 + 2}
@@ -116,6 +121,10 @@ export const MazeCell: React.FC<MazeCellProps> = ({ cell, cellSize, isPlayer, is
             rx={cellSize / 4}
             ry={cellSize / 8}
             fill="#00000030"
+            style={{ 
+              transition: isAnimating ? 'all 0.3s ease-in-out' : 'none',
+              opacity: isAnimating ? 0.6 : 1
+            }}
           />
         </g>
       )}

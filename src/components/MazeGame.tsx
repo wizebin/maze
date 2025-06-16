@@ -14,6 +14,8 @@ export const MazeGame: React.FC = () => {
     y: mazeSize.height - 1 
   });
   const [gameWon, setGameWon] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animatedPosition, setAnimatedPosition] = useState<Position>(playerPosition);
 
   const handleWin = useCallback(() => {
     setGameWon(true);
@@ -22,6 +24,7 @@ export const MazeGame: React.FC = () => {
   const resetGame = useCallback(() => {
     setMaze(generateMaze(mazeSize.width, mazeSize.height));
     setPlayerPosition({ x: 0, y: 0 });
+    setAnimatedPosition({ x: 0, y: 0 });
     setGameWon(false);
   }, [mazeSize.width, mazeSize.height]);
 
@@ -31,6 +34,9 @@ export const MazeGame: React.FC = () => {
     maze,
     goalPosition,
     onWin: handleWin,
+    isAnimating,
+    setIsAnimating,
+    setAnimatedPosition,
   });
 
   useEffect(() => {
@@ -72,8 +78,10 @@ export const MazeGame: React.FC = () => {
         <MazeRenderer
           maze={maze}
           playerPosition={playerPosition}
+          animatedPosition={animatedPosition}
           goalPosition={goalPosition}
           cellSize={50}
+          isAnimating={isAnimating}
         />
         
         <Minimap
