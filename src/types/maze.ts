@@ -27,3 +27,22 @@ export interface GameState {
   goalPosition: Position;
   gameWon: boolean;
 }
+
+export interface ChallengeLevel {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  description: string;
+  optimalMoves: number;
+}
+
+export interface GameScore {
+  level: string;
+  time: number;
+  moves: number;
+  score: number;
+  timestamp: number;
+}
+
+export type GameScreenState = 'menu' | 'playing' | 'finished';

@@ -7,5 +7,10 @@ export default defineConfig({
   server: {
     host: true,
     allowedHosts: ['nexusoft.ngrok.io']
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: [],
   }
 })

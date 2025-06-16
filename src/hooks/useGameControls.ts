@@ -7,6 +7,7 @@ interface UseGameControlsProps {
   maze: Maze;
   goalPosition: Position;
   onWin: () => void;
+  onMove?: () => void;
   isAnimating: boolean;
   setIsAnimating: (animating: boolean) => void;
   setAnimatedPosition: (position: Position) => void;
@@ -120,6 +121,7 @@ export const useGameControls = ({
   maze,
   goalPosition,
   onWin,
+  onMove,
   isAnimating,
   setIsAnimating,
   setAnimatedPosition,
@@ -164,6 +166,9 @@ export const useGameControls = ({
     if (validMoves.length === 0) {
       return;
     }
+    
+    // Notify that a move was made
+    onMove?.();
     
     isProcessingRef.current = true;
     setIsAnimating(true);
