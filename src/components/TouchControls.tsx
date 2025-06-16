@@ -15,6 +15,7 @@ export const TouchControls: React.FC<TouchControlsProps> = ({
   cellSize,
   onDirectionPress,
 }) => {
+  console.log('TouchControls rendered with:', { mazeWidth, mazeHeight, cellSize, onDirectionPress: typeof onDirectionPress });
   const [activeDirection, setActiveDirection] = useState<Direction | null>(null);
 
   const svgWidth = mazeWidth * cellSize;
@@ -22,6 +23,7 @@ export const TouchControls: React.FC<TouchControlsProps> = ({
   const touchZoneSize = Math.min(80, cellSize * 2); // Responsive touch zone size
 
   const handleTouchStart = (direction: Direction) => {
+    console.log('TouchControls: Touch start for direction:', direction);
     setActiveDirection(direction);
     onDirectionPress(direction);
   };
@@ -33,7 +35,7 @@ export const TouchControls: React.FC<TouchControlsProps> = ({
   const getArrowPath = (direction: Direction) => {
     const size = touchZoneSize * 0.3;
     const center = touchZoneSize / 2;
-    
+
     switch (direction) {
       case 'up':
         return `M ${center} ${center - size/2} L ${center + size/2} ${center + size/2} L ${center - size/2} ${center + size/2} Z`;
@@ -53,13 +55,13 @@ export const TouchControls: React.FC<TouchControlsProps> = ({
     style?: React.CSSProperties;
   }> = ({ direction, x, y, style = {} }) => {
     const isActive = activeDirection === direction;
-    
+
     return (
       <div
         style={{
           position: 'absolute',
-          left: x,
-          top: y,
+          left: `calc(${x}px - ${touchZoneSize / 2}px)`,
+          top: `calc(${y}px - ${touchZoneSize / 2}px)`,
           width: touchZoneSize,
           height: touchZoneSize,
           backgroundColor: isActive ? 'rgba(155, 122, 168, 0.3)' : 'rgba(155, 122, 168, 0.15)',
@@ -72,8 +74,8 @@ export const TouchControls: React.FC<TouchControlsProps> = ({
           userSelect: 'none',
           transition: 'all 0.1s ease',
           transform: isActive ? 'scale(0.95)' : 'scale(1)',
-          boxShadow: isActive 
-            ? 'inset 0 2px 4px rgba(0, 0, 0, 0.2)' 
+          boxShadow: isActive
+            ? 'inset 0 2px 4px rgba(0, 0, 0, 0.2)'
             : '0 2px 8px rgba(0, 0, 0, 0.1)',
           ...style,
         }}
@@ -123,32 +125,32 @@ export const TouchControls: React.FC<TouchControlsProps> = ({
       {/* Top touch zone */}
       <TouchZone
         direction="up"
-        x={(svgWidth - touchZoneSize) / 2}
-        y={-touchZoneSize / 2 - 10}
+        x={svgWidth / 2}
+        y={-10}
         style={{ pointerEvents: 'auto' }}
       />
 
       {/* Right touch zone */}
       <TouchZone
         direction="right"
-        x={svgWidth + 10}
-        y={(svgHeight - touchZoneSize) / 2}
+        x={svgWidth}
+        y={svgHeight / 2}
         style={{ pointerEvents: 'auto' }}
       />
 
       {/* Bottom touch zone */}
       <TouchZone
         direction="down"
-        x={(svgWidth - touchZoneSize) / 2}
-        y={svgHeight + 10}
+        x={svgWidth / 2}
+        y={svgHeight}
         style={{ pointerEvents: 'auto' }}
       />
 
       {/* Left touch zone */}
       <TouchZone
         direction="left"
-        x={-touchZoneSize / 2 - 10}
-        y={(svgHeight - touchZoneSize) / 2}
+        x={-10}
+        y={svgHeight / 2}
         style={{ pointerEvents: 'auto' }}
       />
 

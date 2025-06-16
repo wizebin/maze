@@ -11,7 +11,10 @@ interface UseGameControlsProps {
   isAnimating: boolean;
   setIsAnimating: (animating: boolean) => void;
   setAnimatedPosition: (position: Position) => void;
-  onDirectionInput?: (direction: Direction) => void;
+}
+
+interface UseGameControlsReturn {
+  handleDirectionInput: (direction: Direction) => void;
 }
 
 type Direction = 'up' | 'right' | 'down' | 'left';
@@ -126,8 +129,7 @@ export const useGameControls = ({
   isAnimating,
   setIsAnimating,
   setAnimatedPosition,
-  onDirectionInput,
-}: UseGameControlsProps) => {
+}: UseGameControlsProps): UseGameControlsReturn => {
   const inputQueueRef = useRef<Direction[]>([]);
   const isProcessingRef = useRef(false);
   const currentPositionRef = useRef<Position>(playerPosition);
@@ -140,39 +142,19 @@ export const useGameControls = ({
   mazeRef.current = maze;
   goalPositionRef.current = goalPosition;
   
-  const handleDirectionInput = useCallback((direction: Direction) => {
-    // If currently animating, cancel current animation
+  const processAllInputsCallback = useCallback(() => {
+    console.log('useGameControls: processAllInputs called');
     if (isProcessingRef.current) {
-      animationCancelRef.current = true;
-    }
-    
-    // Add to queue (limit queue size to prevent spam)
-    if (inputQueueRef.current.length < 5) {
-      inputQueueRef.current.push(direction);
-    }
-    
-    // Process all queued inputs
-    setTimeout(() => {
-      animationCancelRef.current = false;
-      processAllInputs();
-    }, 10);
-  }, []);
-
-  // Expose the direction input handler
-  useEffect(() => {
-    if (onDirectionInput) {
-      onDirectionInput(handleDirectionInput);
-    }
-  }, [handleDirectionInput, onDirectionInput]);
-
-  const processAllInputs = useCallback(() => {
-    if (isProcessingRef.current) {
+      console.log('useGameControls: Already processing, skipping');
       return;
     }
     
     if (inputQueueRef.current.length === 0) {
+      console.log('useGameControls: No inputs to process');
       return;
     }
+    
+    console.log('useGameControls: Processing', inputQueueRef.current.length, 'inputs');
     
     // Process all inputs to find final destination
     let currentPos = currentPositionRef.current;
@@ -181,12 +163,17 @@ export const useGameControls = ({
     
     while (inputQueueRef.current.length > 0) {
       const direction = inputQueueRef.current.shift()!;
+      console.log('useGameControls: Processing direction:', direction, 'from position:', currentPos);
       const newPosition = findNextIntersection(mazeRef.current, currentPos.x, currentPos.y, direction);
+      console.log('useGameControls: Found next position:', newPosition);
       
       if (newPosition.x !== currentPos.x || newPosition.y !== currentPos.y) {
         validMoves.push(newPosition);
         currentPos = newPosition;
         finalPosition = newPosition;
+        console.log('useGameControls: Valid move to:', newPosition);
+      } else {
+        console.log('useGameControls: Invalid move, staying at:', currentPos);
       }
     }
     
@@ -213,8 +200,12 @@ export const useGameControls = ({
           setIsAnimating(false);
           isProcessingRef.current = false;
           
+          console.log('useGameControls: Checking victory condition - Final position:', finalPosition, 'Goal position:', goalPositionRef.current);
           if (finalPosition.x === goalPositionRef.current.x && finalPosition.y === goalPositionRef.current.y) {
+            console.log('useGameControls: Victory condition met! Calling onWin');
             onWin();
+          } else {
+            console.log('useGameControls: Victory condition not met');
           }
         },
         animationCancelRef
@@ -239,15 +230,49 @@ export const useGameControls = ({
             setIsAnimating(false);
             isProcessingRef.current = false;
             
+            console.log('useGameControls: Checking victory condition (multi-move) - Final position:', finalPosition, 'Goal position:', goalPositionRef.current);
             if (finalPosition.x === goalPositionRef.current.x && finalPosition.y === goalPositionRef.current.y) {
+              console.log('useGameControls: Victory condition met (multi-move)! Calling onWin');
               onWin();
+            } else {
+              console.log('useGameControls: Victory condition not met (multi-move)');
             }
           },
           animationCancelRef
         );
       }, 50);
     }
-  }, [setPlayerPosition, onWin, setIsAnimating, setAnimatedPosition]);
+  }, [setPlayerPosition, onWin, setIsAnimating, setAnimatedPosition, onMove]);
+
+  const handleDirectionInput = useCallback((direction: Direction) => {
+    console.log('useGameControls: Direction input received:', direction);
+    console.log('useGameControls: Current position:', currentPositionRef.current);
+    console.log('useGameControls: Is processing:', isProcessingRef.current);
+    
+    // If currently animating, cancel current animation
+    if (isProcessingRef.current) {
+      console.log('useGameControls: Cancelling current animation');
+      animationCancelRef.current = true;
+    }
+    
+    // Add to queue (limit queue size to prevent spam)
+    if (inputQueueRef.current.length < 5) {
+      inputQueueRef.current.push(direction);
+      console.log('useGameControls: Added to queue, queue length:', inputQueueRef.current.length);
+    } else {
+      console.log('useGameControls: Queue full, ignoring input');
+    }
+    
+    // Process all queued inputs
+    setTimeout(() => {
+      animationCancelRef.current = false;
+      processAllInputsCallback();
+    }, 10);
+  }, [processAllInputsCallback]);
+
+  // Expose the direction input handler via return value
+  console.log('useGameControls: Returning handleDirectionInput:', typeof handleDirectionInput);
+
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -277,4 +302,6 @@ export const useGameControls = ({
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [handleDirectionInput]);
+
+  return { handleDirectionInput };
 };

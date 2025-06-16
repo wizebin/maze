@@ -79,7 +79,6 @@ export const MazeGame: React.FC = () => {
   const [gameWon, setGameWon] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [animatedPosition, setAnimatedPosition] = useState<Position>(playerPosition);
-  const [directionInputHandler, setDirectionInputHandler] = useState<((direction: 'up' | 'right' | 'down' | 'left') => void) | null>(null);
 
   const { scoreHistory, addScore, clearHistory } = useScoreHistory();
   const {
@@ -98,6 +97,8 @@ export const MazeGame: React.FC = () => {
     const startPos = { x: 0, y: 0 };
     const endPos = { x: level.width - 1, y: level.height - 1 };
 
+    console.log('MazeGame: Starting new game with start pos:', startPos, 'end pos:', endPos);
+
     // Calculate actual optimal moves for this specific maze
     const optimalMoves = findOptimalMoves(newMaze, startPos, endPos);
     const levelWithOptimalMoves = { ...level, optimalMoves };
@@ -114,16 +115,23 @@ export const MazeGame: React.FC = () => {
   }, [resetTimer, resetMoves]);
 
   const handleWin = useCallback(() => {
-    if (!currentLevel) return;
+    console.log('MazeGame: handleWin called');
+    if (!currentLevel) {
+      console.log('MazeGame: No current level, returning');
+      return;
+    }
 
+    console.log('MazeGame: Setting game won to true');
     setGameWon(true);
     stopTimer();
 
     // Add score to history
     const score = addScore(currentLevel.id, time, moves, currentLevel.optimalMoves);
+    console.log('MazeGame: Score added:', score);
 
     // Switch to finished screen after a delay
     setTimeout(() => {
+      console.log('MazeGame: Switching to finished screen');
       setGameScreen('finished');
     }, 2000);
   }, [currentLevel, stopTimer, time, moves, addScore]);
@@ -149,22 +157,23 @@ export const MazeGame: React.FC = () => {
     clearHistory();
   }, [clearHistory]);
 
-  useGameControls({
+  const { handleDirectionInput } = useGameControls({
     playerPosition,
     setPlayerPosition,
     maze,
     goalPosition,
     onWin: handleWin,
     onMove: useCallback(() => {
+      console.log('MazeGame: Move made, incrementing moves');
       incrementMoves();
       if (!isRunning) {
+        console.log('MazeGame: Starting timer');
         startTimer();
       }
     }, [incrementMoves, isRunning, startTimer]),
     isAnimating,
     setIsAnimating,
     setAnimatedPosition,
-    onDirectionInput: setDirectionInputHandler,
   });
 
   useEffect(() => {
@@ -281,24 +290,30 @@ export const MazeGame: React.FC = () => {
         </button>
       </div>
 
-      <div style={{ position: 'relative', padding: '100px' }}>
-        <MazeRenderer
-          maze={maze}
-          playerPosition={playerPosition}
-          animatedPosition={animatedPosition}
-          goalPosition={goalPosition}
-          cellSize={currentLevel ? Math.min(50, Math.max(15, 800 / currentLevel.width)) : 50}
-          isAnimating={isAnimating}
-        />
-
-        {currentLevel && directionInputHandler && (
-          <TouchControls
-            mazeWidth={maze.width}
-            mazeHeight={maze.height}
+      <div style={{ position: 'relative', padding: 100 }}>
+        <div style={{ position: 'relative' }}>
+          <MazeRenderer
+            maze={maze}
+            playerPosition={playerPosition}
+            animatedPosition={animatedPosition}
+            goalPosition={goalPosition}
             cellSize={currentLevel ? Math.min(50, Math.max(15, 800 / currentLevel.width)) : 50}
-            onDirectionPress={directionInputHandler}
+            isAnimating={isAnimating}
           />
-        )}
+
+          {currentLevel && (
+            <TouchControls
+              mazeWidth={maze.width}
+              mazeHeight={maze.height}
+              cellSize={currentLevel ? Math.min(50, Math.max(15, 800 / currentLevel.width)) : 50}
+              onDirectionPress={(direction) => {
+                console.log('MazeGame: TouchControls onDirectionPress called with:', direction);
+                console.log('MazeGame: handleDirectionInput is:', handleDirectionInput);
+                handleDirectionInput(direction);
+              }}
+            />
+          )}
+        </div>
       </div>
 
       <div
