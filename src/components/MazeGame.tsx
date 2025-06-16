@@ -99,6 +99,7 @@ export const MazeGame: React.FC = () => {
     mazeHeight: maze.height,
   });
 
+
   const handleStartGame = useCallback((level: ChallengeLevel) => {
     const newMaze = generateMaze(level.width, level.height);
     const startPos = { x: 0, y: 0 };
